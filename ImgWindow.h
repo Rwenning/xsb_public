@@ -247,10 +247,15 @@ private:
 
     XPLMWindowLayer mPreferredLayer;
 
+    /* See implementation of SetVisible for why these exist */
+    bool in_build_interface = false;
+    XPLMFlightLoopID want_close_floop_ID = nullptr;
+
 public:
 	void BringToFront(void);
 	void Center(void);
 	void SetResizingLimits(int minw, int minh, int maxw, int maxh);
+	bool IsPoppedOut(void);
 	void SetPositioningMode(XPLMWindowPositioningMode mode, int monitor);
 	void TakeKeyboardFocus(void);
 	void ReleaseKeyboardFocus(void);

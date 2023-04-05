@@ -193,6 +193,9 @@ ImgWindow::~ImgWindow()
 
 	if (old_ctx != NULL)
 		ImGui::SetCurrentContext(old_ctx);
+
+	if (want_close_floop_ID != nullptr)
+		XPLMDestroyFlightLoop(want_close_floop_ID);
 }
 
 void
@@ -357,7 +360,9 @@ ImgWindow::updateImgui()
 
 	// and construct the window
 	ImGui::Begin(mWindowTitle.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+	in_build_interface = true;
 	buildInterface();
+	in_build_interface = false;
 	ImGui::End();
 
 	// finally, handle window focus.
@@ -513,6 +518,14 @@ ImgWindow::SetWindowTitle(const std::string &title)
 	XPLMSetWindowTitle(mWindowID, mWindowTitle.c_str());
 }
 
+static float
+want_close_cb(float unused1, float unused2, int unused3, void *refcon)
+{
+	ImgWindow *win = (ImgWindow *)refcon;
+	win->SetVisible(false);
+	return (0);
+}
+
 void
 ImgWindow::SetVisible(bool inIsVisible)
 {
@@ -527,8 +540,35 @@ ImgWindow::SetVisible(bool inIsVisible)
 			// chance to early abort.
 			return;
 		}
+		/*
+		 * Unschedule a want_close callback in case the user changed
+		 * their mind about closing the window.
+		 */
+		if (want_close_floop_ID != nullptr)
+			XPLMScheduleFlightLoop(want_close_floop_ID, 0, 1);
 	}
-	XPLMSetWindowIsVisible(mWindowID, inIsVisible);
+	if (inIsVisible || !in_build_interface || !IsPoppedOut()) {
+		XPLMSetWindowIsVisible(mWindowID, inIsVisible);
+	} else {
+		/*
+		 * When we're popped out, calling SetVisible(false) from within
+		 * buildInterface crashes due to the drawing context having
+		 * been invalidated inside of X-Plane, but the window still
+		 * attempting to emit draw calls.
+		 * Schedule a close callback to the start of the next flight
+		 * loop, as by then it's safe for us to close.
+		 */
+		if (want_close_floop_ID == nullptr) {
+			XPLMCreateFlightLoop_t floop{
+			    sizeof(floop),
+			    xplm_FlightLoop_Phase_BeforeFlightModel,
+			    want_close_cb,
+			    this
+			};
+			want_close_floop_ID = XPLMCreateFlightLoop(&floop);
+		}
+		XPLMScheduleFlightLoop(want_close_floop_ID, -1, 1);
+	}
 }
 
 void
@@ -609,6 +649,12 @@ void
 ImgWindow::SetResizingLimits(int minw, int minh, int maxw, int maxh)
 {
 	XPLMSetWindowResizingLimits(mWindowID, minw, minh, maxw, maxh);
+}
+
+bool
+ImgWindow::IsPoppedOut(void)
+{
+	return (XPLMWindowIsPoppedOut(mWindowID));
 }
 
 void
