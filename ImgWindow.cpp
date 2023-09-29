@@ -40,6 +40,7 @@
 #include <GL/glew.h>
 #include "ImgWindow.h"
 
+#include <acfutils/assert.h>
 #include <acfutils/stat.h>
 #include <acfutils/widget.h>
 
@@ -58,10 +59,10 @@ ImgWindow::ImgWindow(
 	int bottom,
 	XPLMWindowDecoration decoration,
 	XPLMWindowLayer layer) :
-	mIsInVR(false),
-	mPreferredLayer(layer),
 	mFirstRender(true),
-	mFontAtlas(sFontAtlas)
+	mFontAtlas(sFontAtlas),
+	mIsInVR(false),
+	mPreferredLayer(layer)
 {
 	ImGuiContext *old_ctx = ImGui::GetCurrentContext();
 
@@ -436,6 +437,8 @@ ImgWindow::HandleKeyFuncCB(
 	void *               inRefcon,
 	int                  losingFocus)
 {
+	IM_UNUSED(inWindowID);
+	IM_UNUSED(losingFocus);
 	auto *thisWindow = reinterpret_cast<ImgWindow *>(inRefcon);
 	ImGui::SetCurrentContext(thisWindow->mImGuiContext);
 	ImGuiIO& io = ImGui::GetIO();
@@ -463,6 +466,7 @@ ImgWindow::HandleCursorFuncCB(
 	int                  y,
 	void *               inRefcon)
 {
+	IM_UNUSED(inWindowID);
 	auto *thisWindow = reinterpret_cast<ImgWindow *>(inRefcon);
 	ImGui::SetCurrentContext(thisWindow->mImGuiContext);
 	ImGuiIO& io = ImGui::GetIO();
@@ -482,6 +486,7 @@ ImgWindow::HandleMouseWheelFuncCB(
 	int                  clicks,
 	void *               inRefcon)
 {
+	IM_UNUSED(inWindowID);
 	auto *thisWindow = reinterpret_cast<ImgWindow *>(inRefcon);
 	ImGui::SetCurrentContext(thisWindow->mImGuiContext);
 	ImGuiIO& io = ImGui::GetIO();
@@ -521,6 +526,10 @@ ImgWindow::SetWindowTitle(const std::string &title)
 static float
 want_close_cb(float unused1, float unused2, int unused3, void *refcon)
 {
+	IM_UNUSED(unused1);
+	IM_UNUSED(unused2);
+	IM_UNUSED(unused3);
+	ASSERT(refcon != NULL);
 	ImgWindow *win = (ImgWindow *)refcon;
 	win->SetVisible(false);
 	return (0);
@@ -625,6 +634,10 @@ ImgWindow::SelfDestructCallback(float inElapsedSinceLastCall,
                                 int inCounter,
                                 void *inRefcon)
 {
+    IM_UNUSED(inElapsedSinceLastCall);
+    IM_UNUSED(inElapsedTimeSinceLastFlightLoop);
+    IM_UNUSED(inCounter);
+    IM_UNUSED(inRefcon);
     while (!sPendingDestruction.empty()) {
         auto *thisObj = sPendingDestruction.front();
         sPendingDestruction.pop();
