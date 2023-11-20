@@ -360,7 +360,11 @@ ImgWindow::updateImgui()
 	ImGui::SetNextWindowSize(ImVec2(win_width, win_height), ImGuiCond_Always);
 
 	// and construct the window
-	ImGui::Begin(mWindowTitle.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin(mWindowTitle.c_str(), nullptr,
+	    (shows_menu_bar ? ImGuiWindowFlags_MenuBar : 0) |
+	    ImGuiWindowFlags_NoTitleBar |
+	    ImGuiWindowFlags_NoResize |
+	    ImGuiWindowFlags_NoCollapse);
 	in_build_interface = true;
 	buildInterface();
 	in_build_interface = false;
@@ -689,3 +693,8 @@ ImgWindow::ReleaseKeyboardFocus(void)
 		XPLMTakeKeyboardFocus(NULL);
 }
 
+void
+ImgWindow::SetShowsMenuBar(bool flag)
+{
+	shows_menu_bar = flag;
+}

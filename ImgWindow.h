@@ -238,6 +238,7 @@ private:
     ImGuiContext *mImGuiContext;
     GLuint mFontTexture;
     bool mIsInVR;
+    bool shows_menu_bar = false;
 
     int mTop;
     int mBottom;
@@ -260,6 +261,7 @@ public:
 	void SetPositioningMode(XPLMWindowPositioningMode mode, int monitor);
 	void TakeKeyboardFocus(void);
 	void ReleaseKeyboardFocus(void);
+	void SetShowsMenuBar(bool flag);
 };
 
 #endif // #ifndef IMGWINDOW_H
