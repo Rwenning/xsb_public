@@ -235,7 +235,6 @@ private:
 
     std::string mWindowTitle;
 
-    XPLMWindowID mWindowID;
     ImGuiContext *mImGuiContext;
     GLuint mFontTexture;
     bool mIsInVR;
@@ -251,6 +250,8 @@ private:
     bool in_build_interface = false;
     XPLMFlightLoopID want_close_floop_ID = nullptr;
 
+protected:
+    XPLMWindowID mWindowID;
 public:
 	void BringToFront(void);
 	void Center(void);
