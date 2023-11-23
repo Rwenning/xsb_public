@@ -698,3 +698,9 @@ ImgWindow::SetShowsMenuBar(bool flag)
 {
 	shows_menu_bar = flag;
 }
+
+XPLMWindowID
+ImgWindow::GetWindowID(void)
+{
+	return (mWindowID);
+}

@@ -262,6 +262,7 @@ public:
 	void TakeKeyboardFocus(void);
 	void ReleaseKeyboardFocus(void);
 	void SetShowsMenuBar(bool flag);
+	XPLMWindowID GetWindowID(void);
 };
 
 #endif // #ifndef IMGWINDOW_H
