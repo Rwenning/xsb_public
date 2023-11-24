@@ -249,7 +249,7 @@ private:
 
     /* See implementation of SetVisible for why these exist */
     bool in_build_interface = false;
-    XPLMFlightLoopID want_close_floop_ID = nullptr;
+    bool want_close_regd = false;
 
 protected:
     XPLMWindowID mWindowID;

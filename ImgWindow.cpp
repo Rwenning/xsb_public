@@ -44,6 +44,9 @@
 #include <acfutils/stat.h>
 #include <acfutils/widget.h>
 
+static const XPLMDrawingPhase WANT_CLOSE_PHASE = xplm_Phase_Window;
+static const bool WANT_CLOSE_BEFORE = true;
+
 static XPLMDataRef		gVrEnabledRef			= nullptr;
 static XPLMDataRef		gModelviewMatrixRef		= nullptr;
 static XPLMDataRef		gViewportRef			= nullptr;
@@ -51,6 +54,17 @@ static XPLMDataRef		gProjectionMatrixRef	= nullptr;
 static XPLMDataRef		gFrameRatePeriodRef     = nullptr;
 
 std::shared_ptr<ImgFontAtlas> ImgWindow::sFontAtlas;
+
+static int
+want_close_cb(XPLMDrawingPhase phase, int before, void *refcon)
+{
+	IM_UNUSED(phase);
+	IM_UNUSED(before);
+	ASSERT(refcon != NULL);
+	ImgWindow *win = (ImgWindow *)refcon;
+	win->SetVisible(false);
+	return (1);
+}
 
 ImgWindow::ImgWindow(
 	int left,
@@ -195,8 +209,10 @@ ImgWindow::~ImgWindow()
 	if (old_ctx != NULL)
 		ImGui::SetCurrentContext(old_ctx);
 
-	if (want_close_floop_ID != nullptr)
-		XPLMDestroyFlightLoop(want_close_floop_ID);
+	if (want_close_regd) {
+		XPLMUnregisterDrawCallback(want_close_cb, WANT_CLOSE_PHASE,
+		    WANT_CLOSE_BEFORE, this);
+	}
 }
 
 void
@@ -527,18 +543,6 @@ ImgWindow::SetWindowTitle(const std::string &title)
 	XPLMSetWindowTitle(mWindowID, mWindowTitle.c_str());
 }
 
-static float
-want_close_cb(float unused1, float unused2, int unused3, void *refcon)
-{
-	IM_UNUSED(unused1);
-	IM_UNUSED(unused2);
-	IM_UNUSED(unused3);
-	ASSERT(refcon != NULL);
-	ImgWindow *win = (ImgWindow *)refcon;
-	win->SetVisible(false);
-	return (0);
-}
-
 void
 ImgWindow::SetVisible(bool inIsVisible)
 {
@@ -553,15 +557,14 @@ ImgWindow::SetVisible(bool inIsVisible)
 			// chance to early abort.
 			return;
 		}
-		/*
-		 * Unschedule a want_close callback in case the user changed
-		 * their mind about closing the window.
-		 */
-		if (want_close_floop_ID != nullptr)
-			XPLMScheduleFlightLoop(want_close_floop_ID, 0, 1);
 	}
 	if (inIsVisible || !in_build_interface || !IsPoppedOut()) {
 		XPLMSetWindowIsVisible(mWindowID, inIsVisible);
+		if (want_close_regd) {
+			XPLMUnregisterDrawCallback(want_close_cb,
+			    WANT_CLOSE_PHASE, WANT_CLOSE_BEFORE, this);
+			want_close_regd = false;
+		}
 	} else {
 		/*
 		 * When we're popped out, calling SetVisible(false) from within
@@ -571,16 +574,11 @@ ImgWindow::SetVisible(bool inIsVisible)
 		 * Schedule a close callback to the start of the next flight
 		 * loop, as by then it's safe for us to close.
 		 */
-		if (want_close_floop_ID == nullptr) {
-			XPLMCreateFlightLoop_t floop{
-			    sizeof(floop),
-			    xplm_FlightLoop_Phase_BeforeFlightModel,
-			    want_close_cb,
-			    this
-			};
-			want_close_floop_ID = XPLMCreateFlightLoop(&floop);
+		if (!want_close_regd) {
+			XPLMRegisterDrawCallback(want_close_cb,
+			    WANT_CLOSE_PHASE, WANT_CLOSE_BEFORE, this);
+			want_close_regd = true;
 		}
-		XPLMScheduleFlightLoop(want_close_floop_ID, -1, 1);
 	}
 }
 
