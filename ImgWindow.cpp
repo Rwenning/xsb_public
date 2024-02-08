@@ -38,11 +38,7 @@
 #include <XPLMDisplay.h>
 #include <XPLMGraphics.h>
 #include <GL/glew.h>
-#include "ImgWindow.h"
 
-#include <acfutils/assert.h>
-#include <acfutils/stat.h>
-#include <acfutils/widget.h>
 
 static const XPLMDrawingPhase WANT_CLOSE_PHASE = xplm_Phase_Window;
 static const bool WANT_CLOSE_BEFORE = true;
@@ -60,7 +56,8 @@ want_close_cb(XPLMDrawingPhase phase, int before, void *refcon)
 {
 	IM_UNUSED(phase);
 	IM_UNUSED(before);
-	ASSERT(refcon != NULL);
+	if(refcon == nullptr)
+		exit(1);
 	ImgWindow *win = (ImgWindow *)refcon;
 	win->SetVisible(false);
 	return (1);
@@ -113,9 +110,9 @@ ImgWindow::ImgWindow(
 	io.KeyMap[ImGuiKey_Delete] = XPLM_VK_DELETE;
 	io.KeyMap[ImGuiKey_Backspace] = XPLM_VK_BACK;
 	io.KeyMap[ImGuiKey_Space] = XPLM_VK_SPACE;
-    io.KeyMap[ImGuiKey_Enter] = XPLM_VK_RETURN;
-    io.KeyMap[ImGuiKey_Escape] = XPLM_VK_ESCAPE;
-    io.KeyMap[ImGuiKey_KeyPadEnter] = XPLM_VK_ENTER;
+   io.KeyMap[ImGuiKey_Enter] = XPLM_VK_RETURN;
+   io.KeyMap[ImGuiKey_Escape] = XPLM_VK_ESCAPE;
+   //io.KeyMap[ImGuiKey_KeyPadEnter] = XPLM_VK_ENTER;
 	io.KeyMap[ImGuiKey_A] = XPLM_VK_A;
 	io.KeyMap[ImGuiKey_C] = XPLM_VK_C;
 	io.KeyMap[ImGuiKey_V] = XPLM_VK_V;
@@ -128,37 +125,22 @@ ImgWindow::ImgWindow(
 	style.WindowRounding = 0;
 
 	// bind the font
-	if (mFontAtlas) {
-        mFontTexture = static_cast<GLuint>(reinterpret_cast<intptr_t>(io.Fonts->TexID));
-    } else {
-        if (iFontAtlas->TexID == nullptr) {
-            // fallback binding if an atlas wasn't explicitly set.
-            unsigned char *pixels;
-            int width, height;
-            io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
+	unsigned char* pixels;
+	int width, height;
+	io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
 
-            // slightly stupid dance around the texture number due to XPLM not using GLint here.
-            int texNum = 0;
-            XPLMGenerateTextureNumbers(&texNum, 1);
-            mFontTexture = (GLuint)texNum;
+	// slightly stupid dance around the texture number due to XPLM not using GLint here.
+	int texNum = 0;
+	XPLMGenerateTextureNumbers(&texNum, 1);
+	mFontTexture = (GLuint) texNum;
 
-            // upload texture.
-            XPLMBindTexture2d(mFontTexture, 0);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-            glTexImage2D(GL_TEXTURE_2D,
-                         0,
-                         GL_ALPHA,
-                         width,
-                         height,
-                         0,
-                         GL_ALPHA,
-                         GL_UNSIGNED_BYTE,
-                         pixels);
-            io.Fonts->SetTexID((void *)((intptr_t)(mFontTexture)));
-        }
-    }
+	// upload texture.
+	XPLMBindTexture2d(mFontTexture, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
+	io.Fonts->TexID = (void *)(intptr_t)(mFontTexture);
 
 	// disable OSX-like keyboard behaviours always - we don't have the keymapping for it.
 	io.ConfigMacOSXBehaviors = false;
@@ -657,7 +639,7 @@ ImgWindow::BringToFront()
 void
 ImgWindow::Center()
 {
-	classic_win_center(mWindowID);
+	//classic_win_center(mWindowID);
 }
 
 void

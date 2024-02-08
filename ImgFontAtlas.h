@@ -35,7 +35,7 @@
 #ifndef IMGFONTATLAS_H
 #define IMGFONTATLAS_H
 
-#include <acfutils/glew.h>
+#include <GL/glew.h>
 #include <imgui.h>
 
 /** Construct an empty font atlas we can use later
