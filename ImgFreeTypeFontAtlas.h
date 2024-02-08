@@ -35,7 +35,7 @@
 #define IMGFREETYPEFONTATLAS_H
 
 #include "ImgFontAtlas.h"
-#include "imgui_freetype.h"
+#include "misc/freetype/imgui_freetype.h"
 
 class ImgFreeTypeFontAtlas: public ImgFontAtlas {
 public:

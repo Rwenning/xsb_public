@@ -34,7 +34,7 @@
 
 #ifndef IMGWINDOW_H
 #define IMGWINDOW_H
-
+#define IMGUI_ENABLE_FREETYPE
 #include <GL/glew.h>
 #include <string>
 #include <memory>

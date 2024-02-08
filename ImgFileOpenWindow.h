@@ -34,11 +34,6 @@
 #include <sys/types.h>
 #endif	/* !IBM */
 
-#include <acfutils/core.h>
-#include <acfutils/delay_line.h>
-#include <acfutils/helpers.h>
-#include <acfutils/stat.h>
-
 #include "ImgWindow.h"
 
 typedef void (*file_win_done_cb_t)(std::string path, void *userinfo);
