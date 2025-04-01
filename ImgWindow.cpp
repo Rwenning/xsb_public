@@ -140,7 +140,7 @@ ImgWindow::ImgWindow(
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
-	io.Fonts->TexID = (void *)(intptr_t)(mFontTexture);
+	io.Fonts->TexID = mFontTexture;
 
 	// disable OSX-like keyboard behaviours always - we don't have the keymapping for it.
 	io.ConfigMacOSXBehaviors = false;
@@ -376,9 +376,9 @@ ImgWindow::updateImgui()
 	else if (!io.WantTextInput && hasKeyboardFocus) {
 		XPLMTakeKeyboardFocus(nullptr);
 		// reset keysdown otherwise we'll think any keys used to defocus the keyboard are still down!
-		for (auto &key : io.KeysDown) {
-			key = false;
-		}
+      for(int keyIndex = 0; keyIndex < IM_ARRAYSIZE(io.KeysData); ++keyIndex) {
+         io.KeysData[keyIndex].Down = false;
+      }
 	}
 	mFirstRender = false;
 }
@@ -445,8 +445,8 @@ ImgWindow::HandleKeyFuncCB(
 	ImGui::SetCurrentContext(thisWindow->mImGuiContext);
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.WantCaptureKeyboard) {
-		auto vk = static_cast<unsigned char>(inVirtualKey);
-		io.KeysDown[vk] = (inFlags & xplm_DownFlag) == xplm_DownFlag;
+		//auto vk = static_cast<unsigned char>(inVirtualKey);
+		//io.KeysDown[vk] = (inFlags & xplm_DownFlag) == xplm_DownFlag;
 		io.KeyShift = (inFlags & xplm_ShiftFlag) == xplm_ShiftFlag;
 		io.KeyAlt = (inFlags & xplm_OptionAltFlag) == xplm_OptionAltFlag;
 		io.KeyCtrl = (inFlags & xplm_ControlFlag) == xplm_ControlFlag;
